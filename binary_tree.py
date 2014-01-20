@@ -6,10 +6,26 @@ Implemented by Pekelny 'I159' Ilya.
 
 class Node(object):
     """Base node class."""
-    data, left, right = None
+    data = left = right = None
 
     def __init__(self, data):
         self.data = data
+
+    def __lt__(self, other):
+        return self.data < other
+
+    def __gt__(self, other):
+        return self.data > other
+
+    def __eq__(self, other):
+        return self.data == other
+
+    def __repr__(self):
+        return "<{}.{}({}) object at {}>".format(
+                    self.__class__.__module__,
+                    self.__class__.__name__,
+                    self.data,
+                    hex(id(self)))
 
     def _direct(self, value):
         if value > self:
@@ -19,17 +35,22 @@ class Node(object):
     def insert(self, value):
         if self.data == None:
             self.data = value
-            return self
-        child = self._direct(value)
-        child.insert(value)
+        else:
+            child = self._direct(value)
+            if child:
+                child.insert(value)
+            else:
+                child = Node(value)
+        return self
+
 
     def lookup(self, value, entry=None):
         entry = entry or self
         if value == entry:
             return entry
         else:
-            child = self._direct(value)
-            return self.lookup(value, child)
+            child = entry._direct(value)
+            return child.lookup(value, child)
 
     def delete(self, value):
         expel = self.lookup(value)
@@ -46,21 +67,42 @@ class Node(object):
 
 
 class BTree(object):
-    """Base binary tree class
+    """Base binary tree class.
+    ::attr root: entry point to all the tree operations.
     """
     root = None
+    current = None
 
     def __init__(self, *args):
-        self.root = Node(args.pop(0))
         for i in args:
-            self.insert(Node(i))
+            self.insert(i)
+
+    def __str__(self):
+        string = ""
+        for i in self:
+            string += i
+        return string
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        raise NotImplementedError("Need to implement algorithm "
+                "to display tree like structure")
 
     def insert(self, other):
-        self.root.insert(other)
+        if self.root == None:
+            self.root = Node(other)
+        else:
+            self.root.insert(other)
         return self
 
     def lookup(self, value):
-        return self.root.lookup(value)
+        try:
+            return self.root.lookup(value)
+        except AttributeError:
+            raise LookupError("{} has no {} item".format(
+                self.__class__, value))
 
     def delete(self, value):
         self.root.delete(value)
