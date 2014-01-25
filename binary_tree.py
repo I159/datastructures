@@ -8,7 +8,7 @@ class Node(object):
     """Base node class."""
     data = left = right = None
 
-    def __init__(self, data):
+    def __init__(self, data=None):
         self.data = data
 
     def __lt__(self, other):
@@ -28,9 +28,14 @@ class Node(object):
                     hex(id(self)))
 
     def _direct(self, value):
-        if value > self:
+        if self < value:
+            if not self.right:
+                self.right = Node()
             return self.right
-        return self.left
+        else:
+            if not self.left:
+                self.left = Node()
+            return self.left
 
     def insert(self, value):
         if self.data == None:
@@ -38,11 +43,9 @@ class Node(object):
         else:
             child = self._direct(value)
             if child:
-                child.insert(value)
+                return child.insert(value)
             else:
                 child = Node(value)
-        return self
-
 
     def lookup(self, value, entry=None):
         entry = entry or self
@@ -87,8 +90,16 @@ class BTree(object):
         return self
 
     def next(self):
-        raise NotImplementedError("Need to implement algorithm "
-                "to display tree like structure")
+        current = self.current or [self.root,]
+        nc = []
+        for i in current:
+            if i:
+                i.left and nc.append(i.left)
+                i.right and nc.append(i.right)
+        self.current = nc
+        if self.current:
+            return self.current
+        raise StopIteration
 
     def insert(self, other):
         if self.root == None:
