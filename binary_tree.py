@@ -33,6 +33,8 @@ class Node(object):
                     hex(id(self)))
 
     def insert(self, value):
+        """Add new node with given value to a tree."""
+
         if self.data == None:
             self.data = value
         else:
@@ -51,6 +53,8 @@ class Node(object):
                 child = Node(value)
 
     def lookup(self, value, entry=None):
+        """Search for particular value from existing nodes below the node."""
+
         entry = entry or self
         if value == entry:
             return entry
@@ -59,6 +63,8 @@ class Node(object):
             return child and child.lookup(value, child) or None
 
     def delete(self, value):
+        """Node deletion and further regroup."""
+
         if self == value:
             if self.right:
                 child = self.right
@@ -108,6 +114,8 @@ class BTree(object):
         return self
 
     def next(self):
+        """Returns next downwardly tree level every next iteration."""
+
         if not self.current:
             self.current = [self.root,]
             return self.current
