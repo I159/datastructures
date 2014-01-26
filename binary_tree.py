@@ -1,7 +1,12 @@
 #! /usr/bin/env python
 """Binary tree.
-Implemented by Pekelny 'I159' Ilya.
 """
+
+
+class ChildlessError(Exception):
+    def __init__(self, node_name):
+        super(ChildlessError, self).__init__(
+                'The {} Node instance have no children.'.format(node_name))
 
 
 class Node(object):
@@ -27,21 +32,19 @@ class Node(object):
                     self.data,
                     hex(id(self)))
 
-    def _direct(self, value):
-        if self < value:
-            if not self.right:
-                self.right = Node()
-            return self.right
-        else:
-            if not self.left:
-                self.left = Node()
-            return self.left
-
     def insert(self, value):
         if self.data == None:
             self.data = value
         else:
-            child = self._direct(value)
+            if self < value:
+                if not self.right:
+                    self.right = Node()
+                child = self.right
+            else:
+                if not self.left:
+                    self.left = Node()
+                child = self.left
+
             if child:
                 return child.insert(value)
             else:
@@ -52,26 +55,41 @@ class Node(object):
         if value == entry:
             return entry
         else:
-            child = entry._direct(value)
-            return child.lookup(value, child)
+            child = self.right if self < value else self.left
+            return child and child.lookup(value, child) or None
 
     def delete(self, value):
-        expel = self.lookup(value)
-        if expel.left == None == expel.right:
-            del expel
-        elif expel.right:
-            child = expel.right
-            while child.left:
-                child = child.left
-            expel = child
-        elif expel.left:
-            expel = expel.left
-        return self
+        if self == value:
+            if self.right:
+                child = self.right
+                relative = None
+                while child.left:
+                    relative = child
+                    child = child.left
+                self.data = child.data
+                child.right and self.right.insert(child.right.data)
+                if relative:
+                    relative.left = None
+                else:
+                    self.right = None
+            elif self.left:
+                self.data = self.left.data
+                self.right = self.left.right
+                self.left = self.left.left
+            else:
+                raise ChildlessError
+        else:
+            child = self.right if self < value else self.left
+            if child:
+                child.delete(value)
+            else:
+                raise LookupError
 
 
 class BTree(object):
     """Base binary tree class.
-    ::attr root: entry point to all the tree operations.
+    ::root: Node instance, entry point to all the tree operations.
+    ::current: list of nodes, describes tree level. Nedded for iteration.
     """
     root = None
     current = None
@@ -83,16 +101,18 @@ class BTree(object):
     def __str__(self):
         string = ""
         for i in self:
-            string += i
+            string += str(i)
         return string
 
     def __iter__(self):
         return self
 
     def next(self):
-        current = self.current or [self.root,]
+        if not self.current:
+            self.current = [self.root,]
+            return self.current
         nc = []
-        for i in current:
+        for i in self.current:
             if i:
                 i.left and nc.append(i.left)
                 i.right and nc.append(i.right)
@@ -116,5 +136,8 @@ class BTree(object):
                 self.__class__, value))
 
     def delete(self, value):
-        self.root.delete(value)
+        try:
+            self.root.delete(value)
+        except ChildlessError:
+            self.root = None
         return self
