@@ -58,9 +58,9 @@ class Node(object):
         entry = entry or self
         if value == entry:
             return entry
-        else:
-            child = self.right if self < value else self.left
-            return child and child.lookup(value, child) or None
+
+        child = self.right if self < value else self.left
+        return child and child.lookup(value, child) or None
 
     def delete(self, value):
         """Node deletion and further regroup."""
@@ -69,21 +69,25 @@ class Node(object):
             if self.right:
                 child = self.right
                 relative = None
+
                 while child.left:
                     relative = child
                     child = child.left
                 self.data = child.data
+
                 child.right and self.right.insert(child.right.data)
                 if relative:
                     relative.left = None
                 else:
                     self.right = None
+
             elif self.left:
                 self.data = self.left.data
                 self.right = self.left.right
                 self.left = self.left.left
             else:
                 raise ChildlessError
+
         else:
             child = self.right if self < value else self.left
             if child:
