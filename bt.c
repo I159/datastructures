@@ -38,29 +38,29 @@ insert(int key, struct node **leaf) {
   }
 }
 
-delete(int key, struct node *leaf) {
-  if (leaf->key_value != 0){
-    if (leaf->key_value == key) {
-      if (leaf->right->key_value != 0) {
-        child = leaf->right;
+delete(int key, struct node **leaf) {
+  if ((*leaf) != 0){
+    if ((*leaf)->key_value == key) {
+      if ((*leaf)->right != 0) {
+        child = (*leaf)->right;
         while (child->left != 0) {
           *relative = *child;
           *child = *child->left;
         }
-        leaf->key_value = child->key_value;
+        (*leaf)->key_value = child->key_value;
         if (child->right)
-          insert(child->right->key_value, leaf->right);
-        *relative->left = 0;
+          insert(child->right->key_value, &(*leaf)->right);
+        &(*relative->left) = NULL;
       }
       else {
-        leaf-> = leaf->left;
+        *leaf = (*leaf)->left;
       }
     }
-    else if (key < leaf) {
-      return delete(key, leaf->left);
+    else if (key < (*leaf)->key_value) {
+      return delete(key, &(*leaf)->left);
     }
-    else if (key > leaf) {
-      return delete(key, leaf->right);
+    else if (key > (*leaf)->key_value) {
+      return delete(key, &(*leaf)->right);
     }
   }
   return 0;
