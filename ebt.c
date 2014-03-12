@@ -1,24 +1,31 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+
 struct node {
   int data;
   struct node* left;
   struct node* right;
-}
+};
 
 static int lookup(struct node* node, int value) {
-  if (node == NULL) {
+  if (node == NULL)
     return false;
-  }
   else {
-    if (value == node->data) return true;
+    if (value == node->data)
+      return true;
     else {
-      if (value < node->data) return lookup(node->left, value);
-      else return lookup(node->right, value);
+      if (value < node->data)
+        return lookup(node->left, value);
+      else
+        return lookup(node->right, value);
     }
   }
 }
 
 struct node* NewNode(int data) {
-  struct node* node = new(struct node);
+  /*hm... allocated memory? http://www.codingunit.com/c-tutorial-the-functions-malloc-and-fre*/
+  struct node* node = malloc(sizeof(*node));
   node->data = data;
   node->left = NULL;
   node->right = NULL;
@@ -27,11 +34,15 @@ struct node* NewNode(int data) {
 }
 
 struct node* insert(struct node* node, int data) {
-  if (node == NULL) return NewNode(data);
+  if (node == NULL)
+    return NewNode(data);
   else {
-    if (data <= node->data) node->left = insert(node->left, data);
-    else node->right = insert(node->right. data);
-
+    if (data <= node->data)
+      node->left = insert(node->left, data);
+    else
+      node->right = insert(node->right, data);
     return node;
   }
 }
+
+void main(){}
