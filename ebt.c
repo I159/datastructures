@@ -6,7 +6,7 @@
 #define BUF_SIZE 1024
 char buffer[BUF_SIZE];
 char *command;
-char *idata;
+int *idata;
 
 struct node {
   int data;
@@ -15,7 +15,7 @@ struct node {
 };
 
 struct node* entry;
-const char delimeter[1] = "  ";
+const char delimeter[1] = " ";
 
 static int lookup(struct node* node, int value) {
   if (node == NULL)
@@ -61,13 +61,13 @@ void main(){
     idata = strtok(NULL, delimeter);
     if (command == "insert") {
       if (entry != NULL)
-        insert(entry, idata);
+        insert(entry, *idata);
       else
-        entry = NewNode(idata);
+        entry = NewNode(*idata);
     }
     else if (command == "lookup") {
       if (entry)
-        printf("Found: %d", lookup(entry, idata));
+        printf("Found: %d", lookup(entry, *idata));
     }
   }
 }
