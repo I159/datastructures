@@ -1,12 +1,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
+
+#define BUF_SIZE 1024
+char buffer[BUF_SIZE];
+char *command;
+char *idata;
 
 struct node {
   int data;
   struct node* left;
   struct node* right;
 };
+
+struct node* entry;
+const char delimeter[1] = "  ";
 
 static int lookup(struct node* node, int value) {
   if (node == NULL)
@@ -45,4 +54,20 @@ struct node* insert(struct node* node, int data) {
   }
 }
 
-void main(){}
+void main(){
+
+  while (fgets(buffer, BUF_SIZE, stdin)) {
+    command = strtok(buffer, delimeter);
+    idata = strtok(NULL, delimeter);
+    if (command == "insert") {
+      if (entry != NULL)
+        insert(entry, idata);
+      else
+        entry = NewNode(idata);
+    }
+    else if (command == "lookup") {
+      if (entry)
+        printf("Found: %d", lookup(entry, idata));
+    }
+  }
+}
