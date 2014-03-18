@@ -6,7 +6,7 @@
 #define BUF_SIZE 1024
 char buffer[BUF_SIZE];
 char *command;
-int *idata;
+char *idata;
 
 struct node {
   int data;
@@ -68,6 +68,9 @@ void main(){
     else if (command == "lookup") {
       if (entry)
         printf("Found: %d", lookup(entry, *idata));
+    }
+    else {
+        printf("Invalid command\n");
     }
   }
 }
