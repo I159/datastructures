@@ -15,7 +15,7 @@ struct node {
 };
 
 struct node* entry;
-const char delimeter[1] = " ";
+const char *delimeter = " ";
 
 static int lookup(struct node* node, int value) {
   if (node == NULL)
@@ -59,13 +59,19 @@ void main(){
   while (fgets(buffer, BUF_SIZE, stdin)) {
     command = strtok(buffer, delimeter);
     idata = strtok(NULL, delimeter);
-    if (command == "insert") {
+    /* Compare strings.
+     * Maybe \n\r in the token.
+     * http://www.tutorialspoint.com/ansi_c/c_strstr.htm */
+    printf("%d %s\n", strcmp(command, "isert"), command);
+
+    if (strcmp(command, "insert") == 1) {
+      printf("Inserting %s\n", idata);
       if (entry != NULL)
         insert(entry, *idata);
       else
         entry = NewNode(*idata);
     }
-    else if (command == "lookup") {
+    else if (strcmp(command, "lookup") == 1) {
       if (entry)
         printf("Found: %d", lookup(entry, *idata));
     }
