@@ -8,7 +8,7 @@ char buffer[BUF_SIZE];
 char *command;
 int *idata;
 int dvalue;
-int *found;
+int found;
 
 struct node {
   int data;
@@ -19,25 +19,19 @@ struct node {
 static struct node* entry;
 const char *delimeter = " ";
 
-static int lookup(struct node* node, int value) { /*static was here*/
-  if (node == NULL){
+static int lookup(struct node* node, int value) {
+  if (node == NULL)
     return false;
-  }
   else {
-    printf("node == NULL: %d", node == NULL);
     if (value == node->data)
       return node->data;
-    else {
-      if (value < node->data)
-        return lookup(node->left, value);
-      else
-        return lookup(node->right, value);
-    }
+    else if (value < node->data)
+      return lookup(node->left, value);
+    return lookup(node->right, value);
   }
 }
 
 struct node* NewNode(int data) {
-  /*hm... allocated memory? http://www.codingunit.com/c-tutorial-the-functions-malloc-and-fre*/
   struct node* node = malloc(sizeof(*node));
   node->data = data;
   node->left = NULL;
@@ -61,6 +55,7 @@ struct node* insert(struct node* node, int data) {
 void main(){
 
   while (fgets(buffer, BUF_SIZE, stdin)) {
+    /* Segfault if no buffer*/
     command = strtok(buffer, delimeter);
     dvalue = atoi(strtok(NULL, delimeter));
     idata = &dvalue;
@@ -73,12 +68,12 @@ void main(){
         entry = NewNode(*idata);
     }
     else if (strcmp(command, "lookup") == 0) {
-      if (entry && (*found = lookup(entry, *idata)))
-        printf("Found: %d\n", *found);
+      if (entry && (found = lookup(entry, *idata)))
+        printf("Found: %d\n", found);
       else if (!entry)
         printf("The tree is empty\n");
       else if (!found)
-        printf("%d not in the tree.", *idata);
+        printf("%d not in the tree\n", *idata);
     }
     else {
         printf("Invalid command: %s\n", command);
