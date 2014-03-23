@@ -6,7 +6,9 @@
 #define BUF_SIZE 1024
 char buffer[BUF_SIZE];
 char *command;
-char *idata;
+int *idata;
+int dvalue;
+int *found;
 
 struct node {
   int data;
@@ -14,15 +16,17 @@ struct node {
   struct node* right;
 };
 
-struct node* entry;
+static struct node* entry;
 const char *delimeter = " ";
 
-static int lookup(struct node* node, int value) {
-  if (node == NULL)
+static int lookup(struct node* node, int value) { /*static was here*/
+  if (node == NULL){
     return false;
+  }
   else {
+    printf("node == NULL: %d", node == NULL);
     if (value == node->data)
-      return true;
+      return node->data;
     else {
       if (value < node->data)
         return lookup(node->left, value);
@@ -58,25 +62,26 @@ void main(){
 
   while (fgets(buffer, BUF_SIZE, stdin)) {
     command = strtok(buffer, delimeter);
-    idata = strtok(NULL, delimeter);
-    /* Compare strings.
-     * Maybe \n\r in the token.
-     * http://www.tutorialspoint.com/ansi_c/c_strstr.htm */
-    printf("%d %s\n", strcmp(command, "isert"), command);
+    dvalue = atoi(strtok(NULL, delimeter));
+    idata = &dvalue;
 
-    if (strcmp(command, "insert") == 1) {
-      printf("Inserting %s\n", idata);
+    if (strcmp(command, "insert") == 0) {
       if (entry != NULL)
         insert(entry, *idata);
       else
+        printf("Inserting %d\n", *idata);
         entry = NewNode(*idata);
     }
-    else if (strcmp(command, "lookup") == 1) {
-      if (entry)
-        printf("Found: %d", lookup(entry, *idata));
+    else if (strcmp(command, "lookup") == 0) {
+      if (entry && (*found = lookup(entry, *idata)))
+        printf("Found: %d\n", *found);
+      else if (!entry)
+        printf("The tree is empty\n");
+      else if (!found)
+        printf("%d not in the tree.", *idata);
     }
     else {
-        printf("Invalid command\n");
+        printf("Invalid command: %s\n", command);
     }
   }
 }
