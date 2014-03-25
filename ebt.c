@@ -56,7 +56,14 @@ void main(){
 
   while (fgets(buffer, BUF_SIZE, stdin)) {
     /* Segfault if no buffer*/
-    command = strtok(buffer, delimeter);
+    if (buffer[0] == '\n'){
+      printf("Command and data is empty.");
+      exit(0);
+    }
+    if((command = strtok(buffer, delimeter)) == buffer){
+      printf("Data is empty.");
+      exit(0);
+    }
     dvalue = atoi(strtok(NULL, delimeter));
     idata = &dvalue;
 
@@ -77,6 +84,7 @@ void main(){
     }
     else {
         printf("Invalid command: %s\n", command);
+        exit(0);
     }
   }
 }
