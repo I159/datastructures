@@ -8,7 +8,6 @@ char buffer[BUF_SIZE];
 char *command;
 int *idata;
 int dvalue;
-int found;
 
 struct node {
   int data;
@@ -17,14 +16,16 @@ struct node {
 };
 
 static struct node* entry;
+struct node* found;
+struct node* leftest;
 const char *delimeter = " ";
 
-static int lookup(struct node* node, int value) {
+struct node* lookup(struct node* node, int value) {
   if (node == NULL)
     return false;
   else {
     if (value == node->data)
-      return node->data;
+      return node;
     else if (value < node->data)
       return lookup(node->left, value);
     return lookup(node->right, value);
@@ -52,6 +53,21 @@ struct node* insert(struct node* node, int data) {
   }
 }
 
+int delete(struct node* node, int value) {
+  found = lookup(node, value);
+  if (found->right != NULL){
+    leftest = found->right;
+    while (leftest)
+      leftest = leftest->left;
+
+    found->data = leftest->data;
+    if (leftest->right)
+      insert(found, leftest->right->data);
+    free(leftest);
+  }
+  return 0;
+}
+
 void main(){
 
   while (fgets(buffer, BUF_SIZE, stdin)) {
@@ -76,15 +92,17 @@ void main(){
     }
     else if (strcmp(command, "lookup") == 0) {
       if (entry && (found = lookup(entry, *idata)))
-        printf("Found: %d\n", found);
+        printf("Found: %d\n", found->data);
       else if (!entry)
         printf("The tree is empty\n");
       else if (!found)
         printf("%d not in the tree\n", *idata);
     }
+    else if (strcmp(command, "delete") == 0)
+      delete(idata);
     else {
-        printf("Invalid command: %s\n", command);
-        exit(0);
+      printf("Invalid command: %s\n", command);
+      exit(0);
     }
   }
 }
