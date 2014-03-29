@@ -5,10 +5,11 @@
 
 #define BUF_SIZE 1024
 char buffer[BUF_SIZE];
-char *parsed;
 char *command;
 int *idata;
 int dvalue;
+char **tokens;
+char *tok;
 
 struct node {
   int data;
@@ -72,10 +73,29 @@ int delete(struct node* node, int value) {
 void main(){
 
   while (fgets(buffer, BUF_SIZE, stdin)) {
-    /* Segfault if no buffer*/
-    parsed = strdup(buffer);
-    command = strtok(parsed, delimeter);
-    dvalue = atoi(strtok(NULL, delimeter));
+    /* Tokenization. TODO: separate into the helper. */
+    char *parsed = malloc(sizeof(buffer));
+    tokens = (char**)malloc(sizeof(buffer));
+    if (buffer[0] == '\n'){
+      printf("What do you expect? Enter sumething!");
+      exit(0);
+    }
+    strcpy(parsed, buffer);
+    if ((tok = strsep(&parsed, delimeter)) != NULL)
+      tokens[0] = tok;
+    else
+      exit(0);
+    if ((tok = strsep(&parsed, delimeter)) != NULL)
+      tokens[1] = tok;
+    else
+      exit(0);
+
+    //free(parsed);
+    //free(tok);
+    /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+    command = tokens[0];
+    dvalue = atoi(tokens[1]);
     idata = &dvalue;
 
     if (strcmp(command, "insert") == 0) {
