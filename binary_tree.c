@@ -79,7 +79,8 @@ int delete(struct node* node, int value) {
   }
   else {
     free(found);
-    found = NULL;
+    if (memcmp(found, entry, sizeof(found)) == 0)
+      entry = NULL;
   }
   return 0;
 }
