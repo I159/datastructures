@@ -67,6 +67,7 @@ int delete(struct node* node, int value) {
     if (leftest->right)
       insert(found, leftest->right->data);
     free(leftest);
+    leftest = NULL;
   }
   else if (found->left != NULL){
     found->data = found->left->data;
@@ -74,9 +75,11 @@ int delete(struct node* node, int value) {
     tmp = *(found->left->left);
     found->left = &tmp;
     free(found->left);
+    found->left = NULL;
   }
   else {
     free(found);
+    found = NULL;
   }
   return 0;
 }
@@ -120,8 +123,11 @@ void main(){
       else if (!found)
         printf("%d not in the tree\n", *idata);
     }
-    else if ((strcmp(command, "delete") == 0) && entry)
-      delete(entry, *idata);
+    else if (strcmp(command, "delete") == 0)
+      if (entry != NULL)
+        delete(entry, *idata);
+      else
+        exit(0);
     else {
       printf("Invalid command: %s\n", command);
       exit(0);
