@@ -20,6 +20,7 @@ struct node {
 static struct node* entry;
 struct node* found;
 struct node* leftest;
+struct node tmp;
 const char *delimeter = " ";
 
 struct node* lookup(struct node* node, int value) {
@@ -59,7 +60,7 @@ int delete(struct node* node, int value) {
   found = lookup(node, value);
   if (found->right != NULL){
     leftest = found->right;
-    while (leftest)
+    while (leftest->left)
       leftest = leftest->left;
 
     found->data = leftest->data;
@@ -67,32 +68,38 @@ int delete(struct node* node, int value) {
       insert(found, leftest->right->data);
     free(leftest);
   }
+  else if (found->left != NULL){
+    found->data = found->left->data;
+    found->right = found->left->right;
+    tmp = *(found->left->left);
+    found->left = &tmp;
+    free(found->left);
+  }
+  else {
+    free(found);
+  }
   return 0;
+}
+
+char **tokenize(char buffer[BUF_SIZE]) {
+  char *parsed = malloc(sizeof(buffer));
+  tokens = (char**)malloc(sizeof(buffer));
+  if (buffer[0] == '\n'){
+    printf("What do you expect? Enter sumething!\n");
+    exit(0);
+  }
+  strcpy(parsed, buffer);
+  if (!(((tok = strsep(&parsed, delimeter)) != NULL) && (tokens[0] = tok)))
+    exit(0);
+  if (!(((tok = strsep(&parsed, delimeter)) != NULL) && (tokens[1] = tok)))
+    exit(0);
+  return tokens;
 }
 
 void main(){
 
   while (fgets(buffer, BUF_SIZE, stdin)) {
-    /* Tokenization. TODO: separate into the helper. */
-    char *parsed = malloc(sizeof(buffer));
-    tokens = (char**)malloc(sizeof(buffer));
-    if (buffer[0] == '\n'){
-      printf("What do you expect? Enter sumething!");
-      exit(0);
-    }
-    strcpy(parsed, buffer);
-    if ((tok = strsep(&parsed, delimeter)) != NULL)
-      tokens[0] = tok;
-    else
-      exit(0);
-    if ((tok = strsep(&parsed, delimeter)) != NULL)
-      tokens[1] = tok;
-    else
-      exit(0);
-
-    //free(parsed);
-    //free(tok);
-    /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+    tokens = tokenize(buffer);
 
     command = tokens[0];
     dvalue = atoi(tokens[1]);
