@@ -13,16 +13,19 @@ struct key* current = NULL;
 int length;
 int *tmp;
 
-struct key *NewNode(int* value) {
-  struct key* new_key;
-  struct key* new_node = malloc(sizeof *new_key);
+struct key *NewKey(int *value) {
+  struct key *new_key = malloc(sizeof *new_key);
 
   new_key->data = value;
   new_key->left = NULL;
   new_key->right = NULL;
 
-  new_node[0] = *new_key;
+  return new_key;
+}
 
+struct key *NewNode(int *value) {
+  struct key *new_node = malloc(sizeof *new_node);
+  new_node[0] = NewKey(value);
   return new_node;
 }
 
@@ -33,7 +36,7 @@ struct node *insert(struct key* entry, int* value) {
     entry = realloc(entry, (length + 1) * sizeof(entry[0]));
     for (length; (entry[length].data > value) || (length >= 0); length--)
       entry[length + 1] = entry[length];
-    entry[length] = NewKey(value);
+    entry[length] = NewKey(*value);
   }
   else {
     //The game is started!!! Make the tree higher.
