@@ -35,32 +35,41 @@ struct key *lookup(struct key *entry, int *value) {
   }
 }
 
+struct key *insert_into(struct key *entry, int *value, int i) {
+  entry = realloc(entry, (length + 1) * sizeof(entry[0]));
+  for (length; (entry[length].data > value) || (length >= 0); length--)
+    entry[length + 1] = entry[length];
+  entry[length] = *NewKey(value);
+}
+
 struct key *insert(struct key *entry, int *value) {
   length = sizeof(entry)/sizeof(entry[0]);
 
-  // TODO: understand when flat insert is possible.
+  // The tree is empty
   if (entry == NULL)
     entry = NewNode(value);
-  else if (length < MAX_DEGREE){
-    /*
-     *   Case #1: If value greater than the key->data.
-     *     case #1.1: If next key exists and the value lesser than the next key.
-     *       Then recursive call of the insert function with new entry as entry[i]->right
-     *     case #1.2: If next key exists and the value greater than the next key.
-     *       Then continue.
-     *     case #1.3: If next key does not exist.
-     *       Then create new node as entry[i]->right.
-     *   Case #2: If value lesser than the key->data.
-     *     case #2.1: If previous key exists and the value greater than the previous key->data.
-     *       Then recursive call of the insert function with new entry as entry[i]->left
-     *     case #2.2: If previous key exists and the value lesser than the previous key->data.
-     *       Then continue.
-     *     case #2.3: If previous key does not exist.
-     *       Then create new node as entry[i]->left.
-     *     */
+  // Current node is not filled, insertion in the current node is possible
+  else if (length < MAX_DEGREE) {
+    for (int i; i < length; i++) {
+      if (value > entry[i]) {
+        if ((entry[i+1] != NULL) && (value > entry[i+1]->data))
+          continue;
+        else if (entry[i+1] == NULL) {
+          entry = realloc(entry, length + 1);
+          entry[length+1] = NewKey(value);
+          return entry;
+        }
+        else if ((value < entry[i+1]) && (entry->right != NULL))
+          insert(entry->right, value);
+        else if (value < entry[i+1] && (entry->right == NULL))
+          return insert_into(entry, value, i);
+      }
+      else {
+      }
+    }
   }
+  // Break into two nodes
   else {
-    // Break into two nodes
   }
 }
 
@@ -72,13 +81,3 @@ int delete(struct node* entry, int* value) {
 
 main() {
 }
-
-
-    /*
-     * The process of the flat insertion
-     *
-    entry = realloc(entry, (length + 1) * sizeof(entry[0]));
-    for (length; (entry[length].data > value) || (length >= 0); length--)
-      entry[length + 1] = entry[length];
-    entry[length] = *NewKey(value);
-    */
