@@ -1,0 +1,71 @@
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define BUF_SIZE 1024
+char buffer[BUF_SIZE];
+
+struct key {
+  int *data;
+  struct key *left;
+  struct key *right;
+  struct key *backerf;
+};
+
+struct key *entry = NULL;
+
+struct key *NewKey(int *value) {
+  struct key *new_key = malloc(sizeof(new_key));
+  new_key->data = value;
+  new_key->right = NULL;
+  new_key->left = NULL;
+}
+
+struct key *insert_into(struct key *node, int *value){
+  int length = sizeof(node)/sizeof(node[0]);
+  node = realloc(node, (length+1)*sizeof(node[0]));
+  node[length] = *NewKey(value);
+  return node;
+}
+
+struct key *insert(struct key *node, int *value) {
+  if (node == NULL)
+    entry = insert_into(node, value);
+  printf("%d", *(entry->data));
+}
+
+/******************************** Utils ************************************
+ * Must be moved to a header. */
+char *command;
+int *idata;
+int dvalue;
+char **tokens;
+char *tok;
+const char *delimeter = " ";
+
+char **tokenize(char buffer[BUF_SIZE]) {
+  char *parsed = malloc(sizeof(buffer));
+  tokens = (char**)malloc(sizeof(buffer));
+  if (buffer[0] == '\n'){
+    printf("What do you expect? Enter sumething!\n");
+    exit(0);
+  }
+  strcpy(parsed, buffer);
+  if (!(((tok = strsep(&parsed, delimeter)) != NULL) && (tokens[0] = tok)))
+    exit(0);
+  if (!(((tok = strsep(&parsed, delimeter)) != NULL) && (tokens[1] = tok)))
+    exit(0);
+  return tokens;
+}
+
+main() {
+  while (fgets(buffer, BUF_SIZE, stdin)) {
+    tokens = tokenize(buffer);
+
+    command = tokens[0];
+    dvalue = atoi(tokens[1]);
+    idata = &dvalue;
+
+    insert(entry, idata);
+  }
+}

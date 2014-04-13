@@ -5,11 +5,6 @@
 
 #define BUF_SIZE 1024
 char buffer[BUF_SIZE];
-char *command;
-int *idata;
-int dvalue;
-char **tokens;
-char *tok;
 
 struct node {
   int data;
@@ -21,7 +16,6 @@ static struct node* entry;
 struct node* found;
 struct node* leftest;
 struct node tmp;
-const char *delimeter = " ";
 
 struct node* lookup(struct node* node, int value) {
   if (node == NULL)
@@ -84,6 +78,15 @@ int delete(struct node* node, int value) {
   }
   return 0;
 }
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~ Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+char *command;
+int *idata;
+int dvalue;
+char **tokens;
+char *tok;
+const char *delimeter = " ";
 
 char **tokenize(char buffer[BUF_SIZE]) {
   char *parsed = malloc(sizeof(buffer));
