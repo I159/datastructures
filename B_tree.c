@@ -23,7 +23,15 @@ struct key *NewKey(int *value) {
 
 struct key *insert_into(struct key *node, int *value){
   int length = sizeof(node)/sizeof(node[0]);
+
   node = realloc(node, (length+1)*sizeof(node[0]));
+  if (length > 0) {
+    for (length; length--;) {
+      node[length+1] = node[length];
+      if ( (value < node[length].data) || (length == 0) )
+        break;
+    }
+  }
   node[length] = *NewKey(value);
   return node;
 }
@@ -31,7 +39,32 @@ struct key *insert_into(struct key *node, int *value){
 struct key *insert(struct key *node, int *value) {
   if (node == NULL)
     entry = insert_into(node, value);
-  printf("%d", *(entry->data));
+  else {
+    int length = sizeof(node)/sizeof(node[0]);
+    int i;
+    for (i; i < length; i++) {
+      if (value > node[i].data) {
+        if (entry[i+1] == NULL){
+          if ((entry[i].right != NULL) && (within(entry[i].right, value) < 1))
+            insert_into(entry[i].right, value);
+          else
+            insert_into(entry, value);
+        }
+        else if (entry[i+1] != NULL) {
+          if (value > entry[i+1].data)
+            continue;
+          else if ((entry[i].right != NULL) && (within(entry[i].right, value) == 0))
+            insert_into(entry[i].right, value);
+          else
+            insert_into(entry, value);
+        }
+      }
+      else {
+        if ( (entry[i-1] == NULL) && (entry[i].left == NULL) )
+          insert_into(entry, value);
+      }
+    }
+  }
 }
 
 /******************************** Utils ************************************
