@@ -27,13 +27,23 @@ struct key *insert_into(struct key *node, int *value){
   node = realloc(node, (length+1)*sizeof(node[0]));
   if (length > 0) {
     for (length; length--;) {
-      node[length+1] = node[length];
+      node[length+1] = node[length]; // TODO: implement refs regroup
       if ( (value < node[length].data) || (length == 0) )
         break;
     }
   }
   node[length] = *NewKey(value);
   return node;
+}
+
+int within(struct key *node, int *value) {
+  int length = sizeof(node)/sizeof(node[0]);
+  if ((value <= node[length-1].data) && (value >= node[0].data))
+    return 0;
+  else if (value > node[length-1].data)
+    return 1;
+  else if (value < node[0].data)
+    return -1;
 }
 
 struct key *insert(struct key *node, int *value) {
@@ -44,13 +54,13 @@ struct key *insert(struct key *node, int *value) {
     int i;
     for (i; i < length; i++) {
       if (value > node[i].data) {
-        if (entry[i+1] == NULL){
-          if ((entry[i].right != NULL) && (within(entry[i].right, value) < 1))
+        if (&(entry[i+1]) == NULL){
+          if ((entry[i].right != NULL) && (within(entry[i].right, value) == 0)) // Squash conditions
             insert_into(entry[i].right, value);
           else
             insert_into(entry, value);
         }
-        else if (entry[i+1] != NULL) {
+        else if (&(entry[i+1]) != NULL) {
           if (value > entry[i+1].data)
             continue;
           else if ((entry[i].right != NULL) && (within(entry[i].right, value) == 0))
@@ -60,8 +70,8 @@ struct key *insert(struct key *node, int *value) {
         }
       }
       else {
-        if ( (entry[i-1] == NULL) && (entry[i].left == NULL) )
-          insert_into(entry, value);
+        if (&(entry[i-1]) == NULL) {
+        }
       }
     }
   }
