@@ -27,7 +27,7 @@ struct key *insert_into(struct key *node, int *value){
   node = realloc(node, (length+1)*sizeof(node[0]));
   if (length > 0) {
     for (length; length--;) {
-      node[length+1] = node[length]; // TODO: implement refs regroup
+      node[length+1] = node[length];
       if ( (value < node[length].data) || (length == 0) )
         break;
     }
@@ -47,31 +47,29 @@ int within(struct key *node, int *value) {
 }
 
 struct key *insert(struct key *node, int *value) {
-  if (node == NULL)
-    entry = insert_into(node, value);
+  if (node == NULL) {
+      entry = insert_into(node, value);
+      return entry;
+  }
   else {
     int length = sizeof(node)/sizeof(node[0]);
     int i;
     for (i; i < length; i++) {
       if (value > node[i].data) {
-        if (&(entry[i+1]) == NULL){
-          if ((entry[i].right != NULL) && (within(entry[i].right, value) == 0)) // Squash conditions
-            insert_into(entry[i].right, value);
-          else
-            insert_into(entry, value);
-        }
-        else if (&(entry[i+1]) != NULL) {
-          if (value > entry[i+1].data)
-            continue;
-          else if ((entry[i].right != NULL) && (within(entry[i].right, value) == 0))
-            insert_into(entry[i].right, value);
-          else
-            insert_into(entry, value);
-        }
+        if ((&(node[i+1]) != NULL) && (value > node[i+1].data))
+          continue;
+        else if ((node[i].right != NULL) && (within(node[i].right, value) == 0))
+          return insert(node[i].right, value);
+        else
+          return insert_into(node, value);
       }
       else {
-        if (&(entry[i-1]) == NULL) {
-        }
+        if ((&(node[i-1]) != NULL) && (value < node[i-1].data))
+          continue;
+        else if ((node[i].left != NULL) && (within(node[i].left, value) == 0))
+          return insert(node[i].left, value);
+        else
+          return insert_into(node, value);
       }
     }
   }
