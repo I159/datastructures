@@ -3,13 +3,16 @@
 #include <stdlib.h>
 
 #define BUF_SIZE 1024
+#define T 3
+#define T_FACTOR (T*2)-1
+
 char buffer[BUF_SIZE];
 
 struct key {
   int *data;
   struct key *left;
   struct key *right;
-  struct key *backerf;
+  struct key *backref;
 };
 
 struct key *entry = NULL;
@@ -19,6 +22,10 @@ struct key *NewKey(int *value) {
   new_key->data = value;
   new_key->right = NULL;
   new_key->left = NULL;
+  new_key->backref = NULL;
+}
+
+struct key *NewNode(int *value, ...) {
 }
 
 struct key *insert_into(struct key *node, int *value){
@@ -53,23 +60,37 @@ struct key *insert(struct key *node, int *value) {
   }
   else {
     int length = sizeof(node)/sizeof(node[0]);
-    int i;
-    for (i; i < length; i++) {
-      if (value > node[i].data) {
-        if ((&(node[i+1]) != NULL) && (value > node[i+1].data))
-          continue;
-        else if ((node[i].right != NULL) && (within(node[i].right, value) == 0))
-          return insert(node[i].right, value);
-        else
-          return insert_into(node, value);
+    if (length < T_FACTOR) {
+      int i;
+      for (i; i < length; i++) {
+        if (value > node[i].data) {
+            if ((&(node[i+1]) != NULL) && (value > node[i+1].data))
+                continue;
+            else if ((node[i].right != NULL) && (within(node[i].right, value) == 0))
+                return insert(node[i].right, value);
+            else
+                return insert_into(node, value);
+        }
+        else {
+            if ((&(node[i-1]) != NULL) && (value < node[i-1].data))
+                continue;
+            else if ((node[i].left != NULL) && (within(node[i].left, value) == 0))
+                return insert(node[i].left, value);
+            else
+                return insert_into(node, value);
+        }
       }
+    }
+    else {
+      if (node[0].backref != NULL)
+        insert(node[0].backref, node[2].data);
+      else if (node[length-1].backref != NULL)
+        insert(node[length-1].backref, node[2].data);
       else {
-        if ((&(node[i-1]) != NULL) && (value < node[i-1].data))
-          continue;
-        else if ((node[i].left != NULL) && (within(node[i].left, value) == 0))
-          return insert(node[i].left, value);
-        else
-          return insert_into(node, value);
+        entry = NewKey(node[2].data);
+        entry->left; // slice 0, 1
+        entry->right; // slice 3, 4
+        // TODO: split node
       }
     }
   }
