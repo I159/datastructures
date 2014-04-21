@@ -82,16 +82,30 @@ struct key *insert(struct key *node, int *value) {
       }
     }
     else {
+      struct key *insert_node = NULL;
+
       if (node[0].backref != NULL)
-        insert(node[0].backref, node[2].data);
+        insert_node = insert(node[0].backref, node[2].data);
       else if (node[length-1].backref != NULL)
-        insert(node[length-1].backref, node[2].data);
+        insert_node = insert(node[length-1].backref, node[2].data);
       else {
         entry = NewKey(node[2].data);
-        entry->left; // slice 0, 1
-        entry->right; // slice 3, 4
-        // TODO: split node
+        insert_node = entry;
       }
+      insert_node->left = malloc(sizeof(node[0]));
+      insert_node->right = malloc(sizeof(node[0]));
+      int i;
+      for (i; i < 2; i++) {
+        insert_node->left = realloc(entry->right, sizeof(node[0]) * (i+1));
+        insert_node->left[i] = node[i];
+      }
+      i++;
+      for (i; i < 2; i++) {
+        insert_node->right = realloc(entry->right, sizeof(node[0]) * (i+1));
+        insert_node->right[i] = node[i];
+      }
+      free(node);
+      return insert(insert_node, value);
     }
   }
 }
