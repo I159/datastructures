@@ -25,11 +25,12 @@ struct key *NewKey(int *value) {
   new_key->backref = NULL;
 }
 
-struct key *NewNode(int *value, ...) {
+int len(struct key *node) {
+  return sizeof(node)/sizeof(node[0]);
 }
 
 struct key *insert_into(struct key *node, int *value){
-  int length = sizeof(node)/sizeof(node[0]);
+  int length = len(node);
 
   node = realloc(node, (length+1)*sizeof(node[0]));
   if (length > 0) {
@@ -44,7 +45,7 @@ struct key *insert_into(struct key *node, int *value){
 }
 
 int within(struct key *node, int *value) {
-  int length = sizeof(node)/sizeof(node[0]);
+  int length = len(node);
   if ((value <= node[length-1].data) && (value >= node[0].data))
     return 0;
   else if (value > node[length-1].data)
@@ -53,37 +54,63 @@ int within(struct key *node, int *value) {
     return -1;
 }
 
+struct key *lookup(struct key *node, int *value) {
+  if (node == NULL)
+    exit(0);
+  else {
+    struct key *found = NULL;
+    if (within(node, value) == 0) {
+      int length = len(node);
+      int i;
+      for (i; i < length; i++) {
+        if (node[i]->data == value)
+          return node[i];
+        else if (value > node[i]) {
+          if (node[i]->right != NULL) {
+            if ((within(node[i]->right == 1)) && (node[i+1] != NULL))
+              continue;
+            else if (within(node[i]->right) == 0)
+              return lookup(node[i]->right, value);
+          }
+        }
+        else {
+        }
+      }
+    }
+  }
+}
+
 struct key *insert(struct key *node, int *value) {
   if (node == NULL) {
       entry = insert_into(node, value);
       return entry;
   }
   else {
-    int length = sizeof(node)/sizeof(node[0]);
+    int length = len(node);
     if (length < T_FACTOR) {
       int i;
       for (i; i < length; i++) {
         if (value > node[i].data) {
-            if ((&(node[i+1]) != NULL) && (value > node[i+1].data))
-                continue;
-            else if ((node[i].right != NULL) && (within(node[i].right, value) == 0))
-                return insert(node[i].right, value);
-            else
-                return insert_into(node, value);
+          if (node[i].right != NULL)
+            return insert(node[i].right, value);
+          else if (node[i+1] != NULL)
+            continue;
+          else
+            insert_into(node, value);
         }
         else {
-            if ((&(node[i-1]) != NULL) && (value < node[i-1].data))
-                continue;
-            else if ((node[i].left != NULL) && (within(node[i].left, value) == 0))
-                return insert(node[i].left, value);
-            else
-                return insert_into(node, value);
+          if (node[i].left != NULL)
+            return insert(node[i].left, value);
+          else
+            insert_into(node, value);
         }
       }
     }
+    // TODO: cut out into separate function. Check for length directly after insertion.
     else {
       struct key *insert_node = NULL;
 
+      // TODO: invent the node backref mechanism
       if (node[0].backref != NULL)
         insert_node = insert(node[0].backref, node[2].data);
       else if (node[length-1].backref != NULL)
@@ -96,13 +123,13 @@ struct key *insert(struct key *node, int *value) {
       insert_node->right = malloc(sizeof(node[0]));
       int i;
       for (i; i < 2; i++) {
-        insert_node->left = realloc(entry->right, sizeof(node[0]) * (i+1));
+        insert_node->left = realloc(insert_node->right, sizeof(node[0]) * (i+1));
         insert_node->left[i] = node[i];
       }
       i++;
-      for (i; i < 2; i++) {
-        insert_node->right = realloc(entry->right, sizeof(node[0]) * (i+1));
-        insert_node->right[i] = node[i];
+      for (i; i <= 5; i++) {
+        insert_node->right = realloc(insert_node->right, sizeof(node[0]) * (i-2));
+        insert_node->right[i-3] = node[i];
       }
       free(node);
       return insert(insert_node, value);
