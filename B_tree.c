@@ -63,14 +63,14 @@ struct key *lookup(struct key *node, int *value) {
       int length = len(node);
       int i;
       for (i; i < length; i++) {
-        if (node[i]->data == value)
-          return node[i];
-        else if (value > node[i]) {
-          if (node[i]->right != NULL) {
-            if ((within(node[i]->right == 1)) && (node[i+1] != NULL))
+        if (node[i].data == value)
+          return &(node[i]);
+        else if (value > node[i].data) {
+          if (node[i].right != NULL) {
+            if ((within(node[i].right, value) == 1) && (&(node[i+1]) != NULL))
               continue;
-            else if (within(node[i]->right) == 0)
-              return lookup(node[i]->right, value);
+            else if (within(node[i].right, value) == 0)
+              return lookup(node[i].right, value);
           }
         }
         else {
@@ -81,62 +81,68 @@ struct key *lookup(struct key *node, int *value) {
 }
 
 struct key *insert(struct key *node, int *value) {
-  if (node == NULL) {
-      entry = insert_into(node, value);
-      return entry;
-  }
-  else {
+  /* Result function decorator. Check (Norris) of node length and break it if
+   * length greated then T-factor. */
+
+  struct key *break_node(struct key *node) {
     int length = len(node);
-    if (length < T_FACTOR) {
-      int i;
-      for (i; i < length; i++) {
-        if (value > node[i].data) {
-          if (node[i].right != NULL)
-            return insert(node[i].right, value);
-          else if (node[i+1] != NULL)
-            continue;
-          else
-            insert_into(node, value);
-        }
-        else {
-          if (node[i].left != NULL)
-            return insert(node[i].left, value);
-          else
-            insert_into(node, value);
-        }
-      }
-    }
-    // TODO: cut out into separate function. Check for length directly after insertion.
-    else {
+    if (length == T_FACTOR) {
       struct key *insert_node = NULL;
 
-      // TODO: invent the node backref mechanism
       if (node[0].backref != NULL)
-        insert_node = insert(node[0].backref, node[2].data);
+      // TODO: solve the f**ing dead lock!
+          insert_node = insert(node[0].backref, node[2].data);
       else if (node[length-1].backref != NULL)
-        insert_node = insert(node[length-1].backref, node[2].data);
+          insert_node = insert(node[length-1].backref, node[2].data);
       else {
-        entry = NewKey(node[2].data);
-        insert_node = entry;
+          entry = NewKey(node[2].data);
+          insert_node = entry;
       }
       insert_node->left = malloc(sizeof(node[0]));
       insert_node->right = malloc(sizeof(node[0]));
       int i;
       for (i; i < 2; i++) {
-        insert_node->left = realloc(insert_node->right, sizeof(node[0]) * (i+1));
-        insert_node->left[i] = node[i];
+          insert_node->left = realloc(insert_node->right, sizeof(node[0]) * (i+1));
+          insert_node->left[i] = node[i];
       }
       i++;
       for (i; i <= 5; i++) {
-        insert_node->right = realloc(insert_node->right, sizeof(node[0]) * (i-2));
-        insert_node->right[i-3] = node[i];
+          insert_node->right = realloc(insert_node->right, sizeof(node[0]) * (i-2));
+          insert_node->right[i-3] = node[i];
       }
       free(node);
-      return insert(insert_node, value);
+      return insert_node;
+    }
+    return node;
+  }
+  /* Declared inside of insert because of FU**NG dead lock! */
+
+  int length = len(node);
+
+  if (node == NULL) {
+      entry = insert_into(node, value);
+      return entry;
+  }
+  else if (length < T_FACTOR) {
+    int i;
+    for (i; i < length; i++) {
+      if (value > node[i].data) {
+        if (&(node[i+1]) != NULL)
+          continue;
+        else if (node[i].right != NULL)
+          return insert(node[i].right, value);
+        else
+          return break_node(insert_into(node, value));
+      }
+      else {
+        if (node[i].left != NULL)
+          return insert(node[i].left, value);
+        else
+          return break_node(insert_into(node, value));
+      }
     }
   }
 }
-
 /******************************** Utils ************************************
  * Must be moved to a header. */
 char *command;
