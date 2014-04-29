@@ -71,6 +71,8 @@ struct key *lookup(struct key *node, int *value) {
               continue;
             else if (within(node[i].right, value) == 0)
               return lookup(node[i].right, value);
+            else
+              return NULL;
           }
           else {
             if (&(node[i+1]) != NULL)
@@ -81,7 +83,7 @@ struct key *lookup(struct key *node, int *value) {
           if (node[i].left != NULL)
             return lookup(node[i].left, value);
           else
-            printf("Nothing found!");
+            return NULL;
         }
       }
     }
@@ -151,6 +153,19 @@ struct key *insert(struct key *node, int *value) {
     }
   }
 }
+
+void delete(struct key *node, int value) {
+  struct key *found_key = lookup(node, value);
+  if (found_key != NULL) {
+    if ( (found_key.right == NULL) && (found_key.left) ) {
+      free(found_key);
+    }
+  }
+  if (len(node) < T - 1)
+    // Rebuild tree
+  return NULL;
+}
+
 /******************************** Utils ************************************
  * Must be moved to a header. */
 char *command;
