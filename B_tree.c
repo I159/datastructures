@@ -72,8 +72,16 @@ struct key *lookup(struct key *node, int *value) {
             else if (within(node[i].right, value) == 0)
               return lookup(node[i].right, value);
           }
+          else {
+            if (&(node[i+1]) != NULL)
+              continue;
+          }
         }
         else {
+          if (node[i].left != NULL)
+            return lookup(node[i].left, value);
+          else
+            printf("Nothing found!");
         }
       }
     }
