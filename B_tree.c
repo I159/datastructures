@@ -92,7 +92,7 @@ struct key *lookup(struct key *node, int *value) {
 
 struct key *insert(struct key *node, int *value) {
   /* Result function decorator. Check (Norris) of node length and break it if
-   * length greated then T-factor. */
+   * length greater then T-factor. */
 
   struct key *break_node(struct key *node) {
     int length = len(node);
@@ -100,10 +100,8 @@ struct key *insert(struct key *node, int *value) {
       struct key *insert_node = NULL;
 
       if (node[0].backref != NULL)
-      // TODO: solve the f**ing dead lock!
+      // TODO: make it decorator
           insert_node = insert(node[0].backref, node[2].data);
-      else if (node[length-1].backref != NULL)
-          insert_node = insert(node[length-1].backref, node[2].data);
       else {
           entry = NewKey(node[2].data);
           insert_node = entry;
@@ -125,7 +123,6 @@ struct key *insert(struct key *node, int *value) {
     }
     return node;
   }
-  /* Declared inside of insert because of FU**NG dead lock! */
 
   int length = len(node);
 
@@ -155,15 +152,24 @@ struct key *insert(struct key *node, int *value) {
 }
 
 void delete(struct key *node, int value) {
+  // TODO: get the deletion algorythm.
   struct key *found_key = lookup(node, value);
+  struct key *found_node;
   if (found_key != NULL) {
-    if ( (found_key.right == NULL) && (found_key.left) ) {
-      free(found_key);
+    if ((found_key.right == NULL) && (found_key.left == NULL)) {
+      int i;
+      for (i; found_key[i]; i--);
+      found_node = found_key[i];
+      if (len(found_node) > T -1)
+        free(found_key);
+      else {
+        // NOTE: backref must be greater than the last node key data.
+        found_key.data = found_key.backref[0].data;
+        found_key.backref[0].data = found_key.backref[0].right[0].data;
+        delete(found_key.backref[0].right[0]);
+      }
     }
   }
-  if (len(node) < T - 1)
-    // Rebuild tree
-  return NULL;
 }
 
 /******************************** Utils ************************************
