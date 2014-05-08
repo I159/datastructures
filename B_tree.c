@@ -90,40 +90,36 @@ struct key *lookup(struct key *node, int *value) {
   }
 }
 
-struct key *insert(struct key *node, int *value) {
-  /* Result function decorator. Check (Norris) of node length and break it if
-   * length greater then T-factor. */
+struct key *break_node(struct key *node) {
+  int length = len(node);
+  if (length == T_FACTOR) {
+    struct key *insert_node = NULL;
 
-  struct key *break_node(struct key *node) {
-    int length = len(node);
-    if (length == T_FACTOR) {
-      struct key *insert_node = NULL;
-
-      if (node[0].backref != NULL)
-      // TODO: make it decorator
-          insert_node = insert(node[0].backref, node[2].data);
-      else {
-          entry = NewKey(node[2].data);
-          insert_node = entry;
-      }
-      insert_node->left = malloc(sizeof(node[0]));
-      insert_node->right = malloc(sizeof(node[0]));
-      int i;
-      for (i; i < 2; i++) {
-          insert_node->left = realloc(insert_node->right, sizeof(node[0]) * (i+1));
-          insert_node->left[i] = node[i];
-      }
-      i++;
-      for (i; i <= 5; i++) {
-          insert_node->right = realloc(insert_node->right, sizeof(node[0]) * (i-2));
-          insert_node->right[i-3] = node[i];
-      }
-      free(node);
-      return insert_node;
+    if (node[0].backref != NULL)
+        insert_node = break_node(insert_into(node[0].backref, node[2].data));
+    else {
+        entry = NewKey(node[2].data);
+        insert_node = entry;
     }
-    return node;
+    insert_node->left = malloc(sizeof(node[0]));
+    insert_node->right = malloc(sizeof(node[0]));
+    int i;
+    for (i; i < 2; i++) {
+        insert_node->left = realloc(insert_node->right, sizeof(node[0]) * (i+1));
+        insert_node->left[i] = node[i];
+    }
+    i++;
+    for (i; i <= 5; i++) {
+        insert_node->right = realloc(insert_node->right, sizeof(node[0]) * (i-2));
+        insert_node->right[i-3] = node[i];
+    }
+    free(node);
+    return insert_node;
   }
+  return node;
+}
 
+struct key *insert(struct key *node, int *value) {
   int length = len(node);
 
   if (node == NULL) {
@@ -151,23 +147,73 @@ struct key *insert(struct key *node, int *value) {
   }
 }
 
-void delete(struct key *node, int value) {
-  // TODO: get the deletion algorythm.
+void delegate_backref(struct *key found_key) {
+  if (found_key.backref != NULL) {
+    if (found_key[1] != 0)
+      found_key[1].backref = found_key.backref;
+    else
+      found_key[-1].backref = found_key.backref;
+  }
+}
+
+// TODO: Create macro for keyword arguments, use default directions, both as true
+void delete(struct key *node, int *value) {
   struct key *found_key = lookup(node, value);
   struct key *found_node;
+  int i;
+
+  for (i=0; found_key[i]; i--);
+  found_node = found_key[i];
+
   if (found_key != NULL) {
-    if ((found_key.right == NULL) && (found_key.left == NULL)) {
-      int i;
-      for (i; found_key[i]; i--);
-      found_node = found_key[i];
-      if (len(found_node) > T -1)
-        free(found_key);
-      else {
-        // NOTE: backref must be greater than the last node key data.
-        found_key.data = found_key.backref[0].data;
-        found_key.backref[0].data = found_key.backref[0].right[0].data;
-        delete(found_key.backref[0].right[0]);
+    if (found_key.right != NULL) && (found_key.left != NULL) {
+      if (len(found_key.left) > t-1) {
+        for (i=0; found_key.left[i], i++);
+        found_key.data = found_key.left[i];
+        return delete(found_key.left, found_key.left[i]);
       }
+      else {
+        found_key.data = found_key.right[0].data;
+        return delete(found_key.right, found_key.right[0].data);
+      }
+    }
+    else if ((found_node[0].gt_parent != NULL) || (found_node[0].lt_parent != NULL)){
+      if (len(found_node) > t-1)
+        free(found_key);
+      else if (right == true) {
+        if (gt_parent != NULL) {
+          delegate_backref(found_key);
+          insert_into(found_node, gt_parent.data);
+          free(found_key);
+          gt_parent.data = gt_parent.right[0].data;
+          return delete(gt_parent.right, gt_parent.right[0].data);
+        }
+        else {
+          return delete(found_node, value, .right=false);
+        }
+      }
+      else {
+        if (lt_parent != NULL) {
+          delegate_backref(found_key);
+          insert_into(found_node, lt_parent.data);
+          free(found_key);
+          lt_parent.data = lt_parent.left.data;
+          return delete(lt_parent.left, lt_parent.left.data);
+        }
+        else {
+          // Level up...
+          found_key.data = gt_parent.data;
+          return delete(gt_parent, gt_parent.data);
+        }
+      }
+    }
+    else {
+      // Drop root and squash nodes.
+      realloc(found_key.left, len(found_key.right)*found_key.left[0]);
+      for (i = len(found_key.left); i < len(found_key.left) + len(found_key.right); i++)
+        found_key.left[i] = found_key.right[i-len(found_key.right)];
+      entry = break_nofe(found_key.left);
+      free(found_key);
     }
   }
 }
