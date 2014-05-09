@@ -6,6 +6,8 @@
 #define T 3
 #define T_FACTOR (T*2)-1
 
+// TODO: Implement parents, greater backref and lesser backref.
+
 char buffer[BUF_SIZE];
 
 struct key {
@@ -93,7 +95,9 @@ struct key *lookup(struct key *node, int *value) {
 struct key *break_node(struct key *node) {
   int length = len(node);
   if (length == T_FACTOR) {
+    int i;
     struct key *insert_node = NULL;
+    struct key *insert_key = NULL;
 
     if (node[0].backref != NULL)
         insert_node = break_node(insert_into(node[0].backref, node[2].data));
@@ -101,17 +105,18 @@ struct key *break_node(struct key *node) {
         entry = NewKey(node[2].data);
         insert_node = entry;
     }
-    insert_node->left = malloc(sizeof(node[0]));
-    insert_node->right = malloc(sizeof(node[0]));
-    int i;
-    for (i; i < 2; i++) {
-        insert_node->left = realloc(insert_node->right, sizeof(node[0]) * (i+1));
-        insert_node->left[i] = node[i];
+    for (i=0; insert_node[i].data == node[2].data);
+    insert_key = insert_node[i];
+    insert_key->left = malloc(sizeof(node[0]));
+    insert_key->right = malloc(sizeof(node[0]));
+    for (i=0; i < 2; i++) {
+        insert_key->left = realloc(insert_key->left, sizeof(node[0]) * (i+1));
+        insert_key->left[i] = node[i];
     }
     i++;
     for (i; i <= 5; i++) {
-        insert_node->right = realloc(insert_node->right, sizeof(node[0]) * (i-2));
-        insert_node->right[i-3] = node[i];
+        insert_key->right = realloc(insert_key->right, sizeof(node[0]) * (i-2));
+        insert_key->right[i-3] = node[i];
     }
     free(node);
     return insert_node;
