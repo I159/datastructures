@@ -92,6 +92,18 @@ struct key *lookup(struct key *node, int *value) {
   }
 }
 
+struct key *first_of(struct key *node) {
+  int i;
+  for (i=0; node[i]; i--);
+  return node[i];
+}
+
+struct key *last_of(struct key *node) {
+  int i;
+  for (i=0; node[i]; i++);
+  return node[i];
+}
+
 struct key *break_node(struct key *node) {
   int length = len(node);
   if (length == T_FACTOR) {
@@ -118,6 +130,20 @@ struct key *break_node(struct key *node) {
         insert_key->right = realloc(insert_key->right, sizeof(node[0]) * (i-2));
         insert_key->right[i-3] = node[i];
     }
+    if ((insert_key[1] == NULL) && (insert_key[-1].backref != NULL)) {
+      insert_key.backref = insert_key[-1].backref;
+      insert_key[-1].backref = NULL;
+    }
+    else if ((insert_key[-1] == NULL) && (insert_key[1].backref != NULL)) {
+      insert_key.backref = insert_key[1].backref;
+      insert_key[1].backref = NULL;
+    }
+
+    insert_key.right.backref = insert_key;
+    last_of(insert_key.left).backref = insert_key;
+    last_of(insert_key.right).backref = insert_key[1];
+    insert_key.left.backref = insert_key[-1];
+
     free(node);
     return insert_node;
   }
