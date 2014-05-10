@@ -188,7 +188,12 @@ void delegate_backref(struct *key found_key) {
 }
 
 // TODO: Create macro for keyword arguments, use default directions, both as true
-void delete(struct key *node, int *value) {
+
+typedef struct {
+  bool right = false;
+} directions;
+
+void delete_base(struct key *node, int *value) {
   struct key *found_key = lookup(node, value);
   struct key *found_node;
   int i;
@@ -248,6 +253,9 @@ void delete(struct key *node, int *value) {
     }
   }
 }
+
+#define delete(struct key *node, int *value, ...)\
+  delete_base(node, value, (directions){__VA_ARGS__});
 
 /******************************** Utils ************************************
  * Must be moved to a header. */
