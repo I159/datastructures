@@ -7,8 +7,6 @@
 #define T 3
 #define T_FACTOR (T*2)-1
 
-// TODO: Implement parents, greater backref and lesser backref.
-
 char buffer[BUF_SIZE];
 
 struct key {
@@ -204,12 +202,6 @@ typedef struct directions {
   bool right;
 } directions;
 
-
-int kw_delete(struct key *node, int *value, directions *direction) {
-  bool right = direction->right ? direction->right : true;
-  return delete_base(node, value, right);
-}
-
 #define delete(node, value, ...)\
   kw_delete(node, value, (directions){__VA_ARGS__});
 
@@ -264,13 +256,21 @@ int delete_base(struct key *node, int *value, bool right) {
     }
     else {
       // Drop root and squash nodes.
-      realloc(found_key->left, len(found_key->right) * sizeof(found_key->left[0]));
+      found_key->left = realloc(
+        found_key->left,
+        len(found_key->right) * sizeof(found_key->left[0]));
+
       for (i = len(found_key->left); i < len(found_key->left) + len(found_key->right); i++)
         found_key->left[i] = found_key->right[i-len(found_key->right)];
       entry = break_node(found_key->left);
       free(found_key);
     }
   }
+}
+
+int kw_delete(struct key *node, int *value, directions *direction) {
+  bool right = direction->right ? direction->right : true;
+  return delete_base(node, value, right);
 }
 
 /******************************** Utils ************************************
