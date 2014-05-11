@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define BUF_SIZE 1024
 #define T 3
@@ -94,14 +95,14 @@ struct key *lookup(struct key *node, int *value) {
 
 struct key *first_of(struct key *node) {
   int i;
-  for (i=0; node[i]; i--);
-  return node[i];
+  for (i=0; &(node[i]) != NULL; i--);
+  return &(node[i]);
 }
 
 struct key *last_of(struct key *node) {
   int i;
-  for (i=0; node[i]; i++);
-  return node[i];
+  for (i=0; &(node[i]) != NULL; i++);
+  return &(node[i]);
 }
 
 struct key *break_node(struct key *node) {
@@ -117,8 +118,8 @@ struct key *break_node(struct key *node) {
         entry = NewKey(node[2].data);
         insert_node = entry;
     }
-    for (i=0; insert_node[i].data == node[2].data);
-    insert_key = insert_node[i];
+    for (i=0; insert_node[i].data != node[2].data; i++);
+    insert_key = &(insert_node[i]);
     insert_key->left = malloc(sizeof(node[0]));
     insert_key->right = malloc(sizeof(node[0]));
     for (i=0; i < 2; i++) {
@@ -130,19 +131,19 @@ struct key *break_node(struct key *node) {
         insert_key->right = realloc(insert_key->right, sizeof(node[0]) * (i-2));
         insert_key->right[i-3] = node[i];
     }
-    if ((insert_key[1] == NULL) && (insert_key[-1].backref != NULL)) {
-      insert_key.backref = insert_key[-1].backref;
+    if ((&(insert_key[1]) == NULL) && (insert_key[-1].backref != NULL)) {
+      insert_key->backref = insert_key[-1].backref;
       insert_key[-1].backref = NULL;
     }
-    else if ((insert_key[-1] == NULL) && (insert_key[1].backref != NULL)) {
-      insert_key.backref = insert_key[1].backref;
+    else if ((&(insert_key[-1]) == NULL) && (insert_key[1].backref != NULL)) {
+      insert_key->backref = insert_key[1].backref;
       insert_key[1].backref = NULL;
     }
 
-    insert_key.right.backref = insert_key;
-    last_of(insert_key.left).backref = insert_key;
-    last_of(insert_key.right).backref = insert_key[1];
-    insert_key.left.backref = insert_key[-1];
+    insert_key->right->backref = insert_key;
+    last_of(insert_key->left)->backref = insert_key;
+    last_of(insert_key->right)->backref = &(insert_key[1]);
+    insert_key->left->backref = &(insert_key[-1]);
 
     free(node);
     return insert_node;
@@ -178,42 +179,54 @@ struct key *insert(struct key *node, int *value) {
   }
 }
 
-void delegate_backref(struct *key found_key) {
-  if (found_key.backref != NULL) {
-    if (found_key[1] != 0)
-      found_key[1].backref = found_key.backref;
+void delegate_backref(struct key *found_key) {
+  if (found_key->backref != NULL) {
+    if (&(found_key[1]) != NULL)
+      found_key[1].backref = found_key->backref;
     else
-      found_key[-1].backref = found_key.backref;
+      found_key[-1].backref = found_key->backref;
   }
 }
 
-// TODO: Create macro for keyword arguments, use default directions, both as true
+typedef struct {
+  struct key greater;
+  struct key lesser;
+} Parents;
+
+struct Parents *get_parents (struct key *node) {
+  struct Parents *parents;
+  parents->lesser = first_of(node)->backref;
+  parents->greater = last_of(node)->backref;
+  return parents;
+}
 
 typedef struct {
-  bool right = false;
+  bool right;
 } directions;
 
-void delete_base(struct key *node, int *value) {
+int delete_base(struct key *node, int *value) {
   struct key *found_key = lookup(node, value);
   struct key *found_node;
+  struct key *last_key;
+  struct key *fn_parents;
   int i;
 
-  for (i=0; found_key[i]; i--);
-  found_node = found_key[i];
+  found_node = first_of(found_key);
+  fn_parents = get_parents(found_node);
 
   if (found_key != NULL) {
-    if (found_key.right != NULL) && (found_key.left != NULL) {
-      if (len(found_key.left) > t-1) {
-        for (i=0; found_key.left[i], i++);
-        found_key.data = found_key.left[i];
-        return delete(found_key.left, found_key.left[i]);
+    if ((found_key->right != NULL) && (found_key->left != NULL)) {
+      if (len(found_key->left) > T-1) {
+        last_key = last_of(found_key->left);
+        found_key->data = last_key->data;
+        return delete(found_key->left, found_key->left[i]);
       }
       else {
-        found_key.data = found_key.right[0].data;
-        return delete(found_key.right, found_key.right[0].data);
+        found_key->data = found_key->right[0].data;
+        return delete(found_key->right, found_key->right[0].data);
       }
     }
-    else if ((found_node[0].gt_parent != NULL) || (found_node[0].lt_parent != NULL)){
+    else if ((fn_parents.greater != NULL) || (fn_parents.lesser != NULL)){
       if (len(found_node) > t-1)
         free(found_key);
       else if (right == true) {
