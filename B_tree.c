@@ -198,12 +198,11 @@ Parents *get_parents (struct key *node) {
   return parents;
 }
 
-typedef struct directions {
+typedef struct {
   bool right;
 } directions;
 
-#define delete(node, value, ...)\
-  kw_delete(node, value, (directions){__VA_ARGS__});
+#define delete(node, value, ...) kw_delete(node, value, (directions){__VA_ARGS__});
 
 int delete_base(struct key *node, int *value, bool right) {
   struct key *found_key = lookup(node, value);
@@ -268,8 +267,8 @@ int delete_base(struct key *node, int *value, bool right) {
   }
 }
 
-int kw_delete(struct key *node, int *value, directions *direction) {
-  bool right = direction->right ? direction->right : true;
+int kw_delete(struct key *node, int *value, directions direction) {
+  bool right = direction.right ? direction.right : true;
   return delete_base(node, value, right);
 }
 
@@ -305,6 +304,17 @@ main() {
     dvalue = atoi(tokens[1]);
     idata = &dvalue;
 
-    insert(entry, idata);
+    if (strcmp(command, "insert") == 0) {
+      insert(entry, idata);
+    }
+    else if (strcmp(command, "delete") == 0) {
+      delete(entry, idata);
+    }
+    else if (strcmp(command, "lookup") == 0) {
+      lookup(entry, idata);
+    }
+    else {
+      exit(0);
+    }
   }
 }
