@@ -3,11 +3,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define BUF_SIZE 1024
 #define T 3
 #define T_FACTOR (T*2)-1
-
-char buffer[BUF_SIZE];
 
 struct key {
   int *data;
@@ -280,6 +277,9 @@ int dvalue;
 char **tokens;
 char *tok;
 const char *delimeter = " ";
+#define BUF_SIZE 1024
+char buffer[BUF_SIZE];
+int i;
 
 char **tokenize(char buffer[BUF_SIZE]) {
   char *parsed = malloc(sizeof(buffer));
@@ -289,10 +289,10 @@ char **tokenize(char buffer[BUF_SIZE]) {
     exit(0);
   }
   strcpy(parsed, buffer);
-  if (!(((tok = strsep(&parsed, delimeter)) != NULL) && (tokens[0] = tok)))
-    exit(0);
-  if (!(((tok = strsep(&parsed, delimeter)) != NULL) && (tokens[1] = tok)))
-    exit(0);
+  for (i=0; i < 2; i++){
+    if (!(((tok = strsep(&parsed, delimeter)) != NULL) && (tokens[i] = tok)))
+      exit(0);
+  }
   return tokens;
 }
 
