@@ -18,9 +18,6 @@ struct key *entry = NULL;
 struct key *NewKey(int *value) {
   struct key *new_key = malloc(sizeof(new_key));
   new_key->data = value;
-  new_key->right = NULL;
-  new_key->left = NULL;
-  new_key->backref = NULL;
 }
 
 int len(struct key *node) {
@@ -38,6 +35,7 @@ struct key *insert_into(struct key *node, int *value){
         break;
     }
   }
+  // Leave only one malloc
   node[length] = *NewKey(value);
   return node;
 }
@@ -278,17 +276,18 @@ char **tokens;
 char *tok;
 const char *delimeter = " ";
 #define BUF_SIZE 1024
-char buffer[BUF_SIZE];
+char buffer[BUFSIZ];
+char *parsed;
 int i;
 
-char **tokenize(char buffer[BUF_SIZE]) {
-  char *parsed = malloc(sizeof(buffer));
+char **tokenize(char *tok_buffer) {
+  parsed = malloc(sizeof(buffer));
   tokens = (char**)malloc(sizeof(buffer));
   if (buffer[0] == '\n'){
     printf("What do you expect? Enter sumething!\n");
     exit(0);
   }
-  strcpy(parsed, buffer);
+  strcpy(parsed, tok_buffer);
   for (i=0; i < 2; i++){
     if (!(((tok = strsep(&parsed, delimeter)) != NULL) && (tokens[i] = tok)))
       exit(0);
@@ -297,7 +296,7 @@ char **tokenize(char buffer[BUF_SIZE]) {
 }
 
 main() {
-  while (fgets(buffer, BUF_SIZE, stdin)) {
+  while (fgets(buffer, BUFSIZ, stdin)) {
     tokens = tokenize(buffer);
 
     command = tokens[0];
