@@ -15,11 +15,6 @@ struct key {
 
 struct key *entry = NULL;
 
-struct key *NewKey(int *value) {
-  struct key *new_key = malloc(sizeof(new_key));
-  new_key->data = value;
-}
-
 int len(struct key *node) {
   return sizeof(node)/sizeof(node[0]);
 }
@@ -35,8 +30,7 @@ struct key *insert_into(struct key *node, int *value){
         break;
     }
   }
-  // Leave only one malloc
-  node[length] = *NewKey(value);
+  node[length].data = value;
   return node;
 }
 
@@ -108,7 +102,8 @@ struct key *break_node(struct key *node) {
     if (node[0].backref != NULL)
         insert_node = break_node(insert_into(node[0].backref, node[2].data));
     else {
-        entry = NewKey(node[2].data);
+        entry = malloc(sizeof(entry));
+        entry->data = node[2].data;
         insert_node = entry;
     }
     for (i=0; insert_node[i].data != node[2].data; i++);
@@ -153,7 +148,7 @@ struct key *insert(struct key *node, int *value) {
   }
   else if (length < T_FACTOR) {
     int i;
-    for (i; i < length; i++) {
+    for (i = 0; i < length; i++) {
       if (value > node[i].data) {
         if (&(node[i+1]) != NULL)
           continue;
