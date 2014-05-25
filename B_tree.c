@@ -6,18 +6,23 @@
 #define T 3
 #define T_FACTOR (T*2)-1
 
-struct key {
+// TODO: use typedef.
+typedef struct key {
   int *data;
   struct key *left;
   struct key *right;
   struct key *backref;
-};
+} key;
+
+// TODO: implement this struct;
+typedef struct node {
+  *int length;
+  key gt_backref;
+  *key ls_backref;
+  *key keys;
+} node;
 
 struct key *entry = NULL;
-
-int len(struct key *node) {
-  return sizeof(node)/sizeof(node[0]);
-}
 
 struct key *insert_into(struct key *node, int *value){
   int length = len(node);
@@ -36,6 +41,7 @@ struct key *insert_into(struct key *node, int *value){
 
 int within(struct key *node, int *value) {
   int length = len(node);
+
   if ((value <= node[length-1].data) && (value >= node[0].data))
     return 0;
   else if (value > node[length-1].data)
@@ -100,11 +106,11 @@ struct key *break_node(struct key *node) {
     struct key *insert_key = NULL;
 
     if (node[0].backref != NULL)
-        insert_node = break_node(insert_into(node[0].backref, node[2].data));
+      insert_node = break_node(insert_into(node[0].backref, node[2].data));
     else {
-        entry = malloc(sizeof(entry));
-        entry->data = node[2].data;
-        insert_node = entry;
+      entry = malloc(sizeof(entry));
+      entry->data = node[2].data;
+      insert_node = entry;
     }
     for (i=0; insert_node[i].data != node[2].data; i++);
     insert_key = &(insert_node[i]);
@@ -305,7 +311,7 @@ main() {
       delete(entry, idata);
     }
     else if (strcmp(command, "lookup") == 0) {
-      lookup(entry, idata);
+      printf("%d", *(lookup(entry, idata)->data));
     }
     else {
       exit(0);
