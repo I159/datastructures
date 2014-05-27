@@ -6,7 +6,6 @@
 #define T 3
 #define T_FACTOR (T*2)-1
 
-// TODO: use typedef.
 typedef struct key {
   int *data;
   struct key *left;
@@ -14,39 +13,37 @@ typedef struct key {
   struct key *backref;
 } key;
 
-// TODO: implement this struct;
 typedef struct node {
   *int length;
-  key gt_backref;
+  *key gt_backref;
   *key ls_backref;
   *key keys;
 } node;
 
-struct key *entry = NULL;
+node *entry = NULL;
 
-struct key *insert_into(struct key *node, int *value){
-  int length = len(node);
-
-  node = realloc(node, (length+1)*sizeof(node[0]));
-  if (length > 0) {
-    for (length; length--;) {
-      node[length+1] = node[length];
-      if ( (value < node[length].data) || (length == 0) )
+node *insert_into(node *node, int *value){
+  int i = node.length;
+  node->keys = realloc(node, (length+1)*sizeof(node[0]));
+  if (node.length > 0) {
+    for (i; i--;) {
+      node->keys[i+1] = node->keys[i];
+      if ((value < node->keys[i].data) || (node.length == 0) )
         break;
     }
   }
-  node[length].data = value;
+  node->keys[length].data = value;
+  node->length++;
   return node;
 }
 
 int within(struct key *node, int *value) {
-  int length = len(node);
-
-  if ((value <= node[length-1].data) && (value >= node[0].data))
+  if ((value <= node->keys[node->length-1].data)
+          && (value >= node->keys[0].data))
     return 0;
-  else if (value > node[length-1].data)
+  else if (value > node->keys[node->length-1].data)
     return 1;
-  else if (value < node[0].data)
+  else if (value < node.keys[0].data)
     return -1;
 }
 
@@ -54,30 +51,30 @@ struct key *lookup(struct key *node, int *value) {
   if (node == NULL)
     exit(0);
   else {
-    struct key *found = NULL;
+    key *found = NULL;
     if (within(node, value) == 0) {
       int length = len(node);
       int i;
-      for (i; i < length; i++) {
-        if (node[i].data == value)
+      for (i; i < node->length; i++) {
+        if (node->keys[i].data == value)
           return &(node[i]);
         else if (value > node[i].data) {
-          if (node[i].right != NULL) {
-            if ((within(node[i].right, value) == 1) && (&(node[i+1]) != NULL))
+          if (node->keys[i].right != NULL) {
+            if ((within(node->keys[i].right, value) == 1) && (&(node->keys[i+1]) != NULL))
               continue;
-            else if (within(node[i].right, value) == 0)
-              return lookup(node[i].right, value);
+            else if (within(node->keys[i].right, value) == 0)
+              return lookup(node->keys[i].right, value);
             else
               return NULL;
           }
           else {
-            if (&(node[i+1]) != NULL)
+            if (&(node->keys[i+1]) != NULL)
               continue;
           }
         }
         else {
-          if (node[i].left != NULL)
-            return lookup(node[i].left, value);
+          if (node->keys[i].left != NULL)
+            return lookup(node->keys[i].left, value);
           else
             return NULL;
         }
@@ -86,22 +83,22 @@ struct key *lookup(struct key *node, int *value) {
   }
 }
 
-struct key *first_of(struct key *node) {
+key *first_of(node *node) {
   int i;
-  for (i=0; &(node[i]) != NULL; i--);
-  return &(node[i]);
+  for (i=0; &(node->keys[i]) != NULL; i--);
+  return &(node->keys[i]);
 }
 
-struct key *last_of(struct key *node) {
+key *last_of(node *node) {
   int i;
-  for (i=0; &(node[i]) != NULL; i++);
-  return &(node[i]);
+  for (i=0; &(node->keys[i]) != NULL; i++);
+  return &(node->keys[i]);
 }
 
-struct key *break_node(struct key *node) {
-  int length = len(node);
-  if (length == T_FACTOR) {
+node *break_node(node *node) {
+  if (node->length == T_FACTOR) {
     int i;
+    // TODO: implement node type here and below.
     struct key *insert_node = NULL;
     struct key *insert_key = NULL;
 
