@@ -99,42 +99,32 @@ node *break_node(node *node) {
   if (node->length == T_FACTOR) {
     int i;
     // TODO: implement node type here and below.
-    struct key *insert_node = NULL;
-    struct key *insert_key = NULL;
+    node *insert_node = NULL;
+    key *insert_key = NULL;
 
-    if (node[0].backref != NULL)
-      insert_node = break_node(insert_into(node[0].backref, node[2].data));
+    if (node->ls_backref != NULL)
+      insert_node = break_node(insert_into(node.ls_backref, node->keys[2].data));
     else {
       entry = malloc(sizeof(entry));
-      entry->data = node[2].data;
+      entry->keys[0]->data = node->keys[2].data;
       insert_node = entry;
     }
-    for (i=0; insert_node[i].data != node[2].data; i++);
-    insert_key = &(insert_node[i]);
+    for (i=0; insert_node->keys[i].data != node->keys[2].data; i++);
+    insert_key = &(insert_node->keys[i]);
     insert_key->left = malloc(sizeof(node[0]));
     insert_key->right = malloc(sizeof(node[0]));
     for (i=0; i < 2; i++) {
-        insert_key->left = realloc(insert_key->left, sizeof(node[0]) * (i+1));
-        insert_key->left[i] = node[i];
+      insert_key->left->keys = realloc(insert_key->left, sizeof(node[0]) * (i+1));
+      insert_key->left->keys[i] = node->keys[i];
     }
     i++;
     for (i; i <= 5; i++) {
-        insert_key->right = realloc(insert_key->right, sizeof(node[0]) * (i-2));
-        insert_key->right[i-3] = node[i];
-    }
-    if ((&(insert_key[1]) == NULL) && (insert_key[-1].backref != NULL)) {
-      insert_key->backref = insert_key[-1].backref;
-      insert_key[-1].backref = NULL;
-    }
-    else if ((&(insert_key[-1]) == NULL) && (insert_key[1].backref != NULL)) {
-      insert_key->backref = insert_key[1].backref;
-      insert_key[1].backref = NULL;
+      insert_key->right->keys = realloc(insert_key->right, sizeof(node[0]) * (i-2));
+      insert_key->right->keys[i-3] = node[i];
     }
 
-    insert_key->right->backref = insert_key;
-    last_of(insert_key->left)->backref = insert_key;
-    last_of(insert_key->right)->backref = &(insert_key[1]);
-    insert_key->left->backref = &(insert_key[-1]);
+    insert_key->right->gt_backref = insert_key;
+    insert_key->left->ls_backref = insert_key;
 
     free(node);
     return insert_node;
@@ -170,27 +160,6 @@ struct key *insert(struct key *node, int *value) {
   }
 }
 
-void delegate_backref(struct key *found_key) {
-  if (found_key->backref != NULL) {
-    if (&(found_key[1]) != NULL)
-      found_key[1].backref = found_key->backref;
-    else
-      found_key[-1].backref = found_key->backref;
-  }
-}
-
-typedef struct Parents {
-  struct key *greater;
-  struct key *lesser;
-} Parents;
-
-Parents *get_parents (struct key *node) {
-  Parents *parents;
-  parents->lesser = first_of(node)->backref;
-  parents->greater = last_of(node)->backref;
-  return parents;
-}
-
 typedef struct {
   bool right;
 } directions;
@@ -198,22 +167,21 @@ typedef struct {
 #define delete(node, value, ...) kw_delete(node, value, (directions){__VA_ARGS__});
 
 int delete_base(struct key *node, int *value, bool right) {
-  struct key *found_key = lookup(node, value);
-  struct key *found_node = first_of(found_key);
-  struct key *last_key;
-  Parents *fn_parents = get_parents(found_node);
+  key *found_key = lookup(node, value);
+  node *found_node = first_of(found_key);
+  key *last_key;
   int i;
 
   if (found_key != NULL) {
     if ((found_key->right != NULL) && (found_key->left != NULL)) {
-      if (len(found_key->left) > T-1) {
+      if found_key->left->length > T-1) {
         last_key = last_of(found_key->left);
         found_key->data = last_key->data;
-        return delete(found_key->left, &(found_key->left[i].data));
+        return delete(found_key->left, last_key.data);
       }
       else {
-        found_key->data = found_key->right[0].data;
-        return delete(found_key->right, found_key->right[0].data);
+        found_key->data = found_key->right->keys[0].data;
+        return delete(found_key->right, found_key->right->keys[0].data);
       }
     }
     else if ((fn_parents->greater != NULL) || (fn_parents->lesser != NULL)){
@@ -222,10 +190,10 @@ int delete_base(struct key *node, int *value, bool right) {
       else if (right == true) {
         if (fn_parents->greater != NULL) {
           delegate_backref(found_key);
-          insert_into(found_node, fn_parents->greater->data);
+          insert_into(found_node, found_node->gt_backref->keys->data);
           free(found_key);
           fn_parents->greater->data = fn_parents->greater->right[0].data;
-          return delete(fn_parents->greater->right, fn_parents->greater->right[0].data);
+          return delete(found_node->gt_parent->right, found_node->gt_parent->right->keys[0].data);
         }
         else {
           return delete(found_node, value, right=false);
@@ -233,10 +201,9 @@ int delete_base(struct key *node, int *value, bool right) {
       }
       else {
         if (fn_parents->lesser != NULL) {
-          delegate_backref(found_key);
           insert_into(found_node, fn_parents->lesser->data);
           free(found_key);
-          fn_parents->lesser->data = fn_parents->lesser->left->data;
+          found_node->lt_parent->keys[0]->data = found_node->lt_parent->keys[0]->left->data;
           return delete(fn_parents->lesser->left, fn_parents->lesser->left->data);
         }
         else {
@@ -252,15 +219,15 @@ int delete_base(struct key *node, int *value, bool right) {
         found_key->left,
         len(found_key->right) * sizeof(found_key->left[0]));
 
-      for (i = len(found_key->left); i < len(found_key->left) + len(found_key->right); i++)
-        found_key->left[i] = found_key->right[i-len(found_key->right)];
+      for (i = found_key->left->length); i < len(found_key->left) + len(found_key->right); i++)
+        found_key->left->keys[i] = found_key->right->keys[i-len(found_key->right)];
       entry = break_node(found_key->left);
       free(found_key);
     }
   }
 }
 
-int kw_delete(struct key *node, int *value, directions direction) {
+int kw_delete(struct node *node, int *value, directions direction) {
   bool right = direction.right ? direction.right : true;
   return delete_base(node, value, right);
 }
