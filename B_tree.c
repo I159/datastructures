@@ -8,46 +8,47 @@
 
 typedef struct key {
   int *data;
-  struct key *left;
-  struct key *right;
+  struct node *left;
+  struct node *right;
   struct key *backref;
 } key;
 
 typedef struct node {
-  *int length;
-  *key gt_backref;
-  *key ls_backref;
-  *key keys;
+  int *length;
+  key *gt_backref;
+  key *ls_backref;
+  struct node *node_backref;
+  key *keys;
 } node;
 
 node *entry = NULL;
 
 node *insert_into(node *node, int *value){
-  int i = node.length;
-  node->keys = realloc(node, (length+1)*sizeof(node[0]));
-  if (node.length > 0) {
+  int i = *(node->length);
+  node->keys = realloc(node, (*(node->length)+1)*sizeof(node[0]));
+  if (node->length > 0) {
     for (i; i--;) {
       node->keys[i+1] = node->keys[i];
-      if ((value < node->keys[i].data) || (node.length == 0) )
+      if ((value < node->keys[i].data) || (node->length == 0) )
         break;
     }
   }
-  node->keys[length].data = value;
+  node->keys[*(node->length)].data = value;
   node->length++;
   return node;
 }
 
-int within(struct key *node, int *value) {
-  if ((value <= node->keys[node->length-1].data)
+int within(struct node *node, int *value) {
+  if ((value <= node->keys[*(node->length)-1].data)
           && (value >= node->keys[0].data))
     return 0;
-  else if (value > node->keys[node->length-1].data)
+  else if (value > node->keys[*(node->length)-1].data)
     return 1;
-  else if (value < node.keys[0].data)
+  else if (value < node->keys[0].data)
     return -1;
 }
 
-struct key *lookup(struct key *node, int *value) {
+struct key *lookup(struct node *node, int *value) {
   if (node == NULL)
     exit(0);
   else {
@@ -55,10 +56,10 @@ struct key *lookup(struct key *node, int *value) {
     if (within(node, value) == 0) {
       int length = len(node);
       int i;
-      for (i; i < node->length; i++) {
+      for (i; i < *(node->length); i++) {
         if (node->keys[i].data == value)
-          return &(node[i]);
-        else if (value > node[i].data) {
+          return &(node->keys[i]);
+        else if (value > node->keys[i].data) {
           if (node->keys[i].right != NULL) {
             if ((within(node->keys[i].right, value) == 1) && (&(node->keys[i+1]) != NULL))
               continue;
@@ -96,14 +97,14 @@ key *last_of(node *node) {
 }
 
 node *break_node(node *node) {
-  if (node->length == T_FACTOR) {
+  if (*(node->length) == T_FACTOR) {
     int i;
     // TODO: implement node type here and below.
-    node *insert_node = NULL;
-    key *insert_key = NULL;
+    struct node *insert_node;
+    key *insert_key;
 
     if (node->ls_backref != NULL)
-      insert_node = break_node(insert_into(node.ls_backref, node->keys[2].data));
+      insert_node = break_node(insert_into(node->node_backref, node->keys[2].data));
     else {
       entry = malloc(sizeof(entry));
       entry->keys[0]->data = node->keys[2].data;
