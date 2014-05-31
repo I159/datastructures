@@ -10,7 +10,7 @@ typedef struct key {
   int *data;
   struct node *left;
   struct node *right;
-  struct key *backref;
+  struct node *container;
 } key;
 
 typedef struct node {
@@ -23,19 +23,19 @@ typedef struct node {
 
 node *entry = NULL;
 
-node *insert_into(node *node, int *value){
-  int i = *(node->length);
-  node->keys = realloc(node, (*(node->length)+1)*sizeof(node[0]));
-  if (node->length > 0) {
+node *insert_into(node *entry_point, int *value){
+  int i = *(entry_point->length);
+  entry_point->keys = realloc(entry_point->keys, (*(entry_point->length)+1)*sizeof(entry_point->keys[0]));
+  if (entry_point->length > 0) {
     for (i; i--;) {
-      node->keys[i+1] = node->keys[i];
-      if ((value < node->keys[i].data) || (node->length == 0) )
+      entry_point->keys[i+1] = entry_point->keys[i];
+      if ((value < entry_point->keys[i].data) || (entry_point->length == 0) )
         break;
     }
   }
-  node->keys[*(node->length)].data = value;
-  node->length++;
-  return node;
+  entry_point->keys[*(entry_point->length)].data = value;
+  entry_point->length++;
+  return entry_point;
 }
 
 int within(struct node *node, int *value) {
@@ -48,13 +48,12 @@ int within(struct node *node, int *value) {
     return -1;
 }
 
-struct key *lookup(struct node *node, int *value) {
+key *lookup(struct node *node, int *value) {
   if (node == NULL)
     exit(0);
   else {
     key *found = NULL;
     if (within(node, value) == 0) {
-      int length = len(node);
       int i;
       for (i; i < *(node->length); i++) {
         if (node->keys[i].data == value)
@@ -84,16 +83,13 @@ struct key *lookup(struct node *node, int *value) {
   }
 }
 
-key *first_of(key *keys) {
+key *__get_edge(key *keys, bool first) {
   int i;
-  for (i=0; &(node->keys[i]) != NULL; i--);
-  return &(node->keys[i]);
-}
-
-key *last_of(node *node) {
-  int i;
-  for (i=0; &(node->keys[i]) != NULL; i++);
-  return &(node->keys[i]);
+  while (&(keys[i]) != NULL) {
+    if (first) i--;
+    else i++;
+  }
+  return &(keys[i]);
 }
 
 node *break_node(node *node) {
@@ -134,15 +130,13 @@ node *break_node(node *node) {
 }
 
 node *insert(struct node *node, int *value) {
-  int length = len(node);
-
   if (node == NULL) {
       entry = insert_into(node, value);
       return entry;
   }
-  else if (length < T_FACTOR) {
+  else if (*(node->length) < T_FACTOR) {
     int i;
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < *(node->length); i++) {
       if (value > node->keys[i].data) {
         if (&(node[i+1]) != NULL)
           continue;
@@ -167,51 +161,50 @@ typedef struct {
 
 #define delete(node, value, ...) kw_delete(node, value, (directions){__VA_ARGS__});
 
-int delete_base(struct node *node, int *value, bool right) {
-  key *found_key = lookup(node, value);
+int delete_base(struct node *entry_point, int *value, bool right) {
+  key *found_key = lookup(entry_point, value);
   struct node *found_node;
-  found_node = first_of(found_key);
+  found_node = found_key->container;
   key *last_key;
   int i;
 
   if (found_key != NULL) {
     if ((found_key->right != NULL) && (found_key->left != NULL)) {
-      if found_key->left->length > T-1) {
-        last_key = last_of(found_key->left);
+      if (*(found_key->left->length) > T-1) {
+        last_key = __get_edge(found_key->left->keys, false);
         found_key->data = last_key->data;
-        return delete(found_key->left, last_key.data);
+        return delete(found_key->left, last_key->data);
       }
       else {
         found_key->data = found_key->right->keys[0].data;
         return delete(found_key->right, found_key->right->keys[0].data);
       }
     }
-    else if ((fn_parents->greater != NULL) || (fn_parents->lesser != NULL)){
-      if (len(found_node) > T-1)
+    else if ((found_node->gt_backref != NULL) || (found_node->ls_backref != NULL)){
+      if (*(found_node->length) > T-1)
         free(found_key);
       else if (right == true) {
-        if (fn_parents->greater != NULL) {
-          delegate_backref(found_key);
-          insert_into(found_node, found_node->gt_backref->keys->data);
+        if (found_node->gt_backref != NULL) {
+          insert_into(found_node, found_node->gt_backref->data);
           free(found_key);
-          fn_parents->greater->data = fn_parents->greater->right[0].data;
-          return delete(found_node->gt_parent->right, found_node->gt_parent->right->keys[0].data);
+          found_node->gt_backref->data = found_node->gt_backref->right->keys[0].data;
+          return delete(found_node->gt_backref->right, found_node->gt_backref->right->keys[0].data);
         }
         else {
           return delete(found_node, value, right=false);
         }
       }
       else {
-        if (fn_parents->lesser != NULL) {
-          insert_into(found_node, fn_parents->lesser->data);
+        if (found_node->ls_backref != NULL) {
+          insert_into(found_node, found_node->ls_backref->data);
           free(found_key);
-          found_node->lt_parent->keys[0]->data = found_node->lt_parent->keys[0]->left->data;
-          return delete(fn_parents->lesser->left, fn_parents->lesser->left->data);
+          found_node->ls_backref->data = found_node->ls_backref->left->keys->data;
+          return delete(found_node->ls_backref->left, found_node->ls_backref->left->keys->data);
         }
         else {
           // Level up...
-          found_key->data = fn_parents->greater->data;
-          return delete(fn_parents->greater, fn_parents->greater->data);
+          found_key->data = found_node->gt_backref->data;
+          return delete(found_node->gt_backref, found_node->gt_backref->data);
         }
       }
     }
@@ -219,10 +212,10 @@ int delete_base(struct node *node, int *value, bool right) {
       // Drop root and squash nodes.
       found_key->left = realloc(
         found_key->left,
-        len(found_key->right) * sizeof(found_key->left[0]));
+        *(found_key->right->length) * sizeof(found_key->left[0]));
 
-      for (i = found_key->left->length); i < len(found_key->left) + len(found_key->right); i++)
-        found_key->left->keys[i] = found_key->right->keys[i-len(found_key->right)];
+      for (i = *(found_key->left->length); i < *(found_key->left->length) + *(found_key->right->length); i++)
+        found_key->left->keys[i] = found_key->right->keys[i-*(found_key->right->length)];
       entry = break_node(found_key->left);
       free(found_key);
     }
