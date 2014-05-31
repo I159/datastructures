@@ -84,7 +84,7 @@ struct key *lookup(struct node *node, int *value) {
   }
 }
 
-key *first_of(node *node) {
+key *first_of(key *keys) {
   int i;
   for (i=0; &(node->keys[i]) != NULL; i--);
   return &(node->keys[i]);
@@ -107,7 +107,7 @@ node *break_node(node *node) {
       insert_node = break_node(insert_into(node->node_backref, node->keys[2].data));
     else {
       entry = malloc(sizeof(entry));
-      entry->keys[0]->data = node->keys[2].data;
+      entry->keys[0].data = node->keys[2].data;
       insert_node = entry;
     }
     for (i=0; insert_node->keys[i].data != node->keys[2].data; i++);
@@ -121,7 +121,7 @@ node *break_node(node *node) {
     i++;
     for (i; i <= 5; i++) {
       insert_key->right->keys = realloc(insert_key->right, sizeof(node[0]) * (i-2));
-      insert_key->right->keys[i-3] = node[i];
+      insert_key->right->keys[i-3] = node->keys[i];
     }
 
     insert_key->right->gt_backref = insert_key;
@@ -133,7 +133,7 @@ node *break_node(node *node) {
   return node;
 }
 
-struct key *insert(struct key *node, int *value) {
+node *insert(struct node *node, int *value) {
   int length = len(node);
 
   if (node == NULL) {
@@ -143,17 +143,17 @@ struct key *insert(struct key *node, int *value) {
   else if (length < T_FACTOR) {
     int i;
     for (i = 0; i < length; i++) {
-      if (value > node[i].data) {
+      if (value > node->keys[i].data) {
         if (&(node[i+1]) != NULL)
           continue;
-        else if (node[i].right != NULL)
-          return insert(node[i].right, value);
+        else if (node->keys[i].right != NULL)
+          return insert(node->keys[i].right, value);
         else
           return break_node(insert_into(node, value));
       }
       else {
-        if (node[i].left != NULL)
-          return insert(node[i].left, value);
+        if (node->keys[i].left != NULL)
+          return insert(node->keys[i].left, value);
         else
           return break_node(insert_into(node, value));
       }
@@ -167,9 +167,10 @@ typedef struct {
 
 #define delete(node, value, ...) kw_delete(node, value, (directions){__VA_ARGS__});
 
-int delete_base(struct key *node, int *value, bool right) {
+int delete_base(struct node *node, int *value, bool right) {
   key *found_key = lookup(node, value);
-  node *found_node = first_of(found_key);
+  struct node *found_node;
+  found_node = first_of(found_key);
   key *last_key;
   int i;
 
