@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include "tokenize.h"
 
 #define BUF_SIZE 1024
 char buffer[BUF_SIZE];
@@ -86,22 +87,6 @@ int *idata;
 int dvalue;
 char **tokens;
 char *tok;
-const char *delimeter = " ";
-
-char **tokenize(char buffer[BUF_SIZE]) {
-  char *parsed = malloc(sizeof(buffer));
-  tokens = (char**)malloc(sizeof(buffer));
-  if (buffer[0] == '\n'){
-    printf("What do you expect? Enter sumething!\n");
-    exit(0);
-  }
-  strcpy(parsed, buffer);
-  if (!(((tok = strsep(&parsed, delimeter)) != NULL) && (tokens[0] = tok)))
-    exit(0);
-  if (!(((tok = strsep(&parsed, delimeter)) != NULL) && (tokens[1] = tok)))
-    exit(0);
-  return tokens;
-}
 
 void main(){
 

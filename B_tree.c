@@ -17,24 +17,44 @@ typedef struct node {
   int *length;
   key *gt_backref;
   key *ls_backref;
-  struct node *node_backref;
   key *keys;
 } node;
 
 node *entry = NULL;
 
+key NewKey(int *value) {
+  // New key production function.
+}
+
+node NewNode(int value) {
+  node *new_node = malloc(sizeof(new_node));
+  new_node->length = malloc(sizeof(int));
+  *(new_node->length) = 1;
+  new_node->gt_backref = NULL;
+  new_node->ls_backref = NULL;
+  new_node->keys = malloc(sizeof(new_node->keys));
+  *(new_node->keys) = NewKey(value);
+  return new_node;
+}
+
 node *insert_into(node *entry_point, int *value){
-  int i = *(entry_point->length);
-  entry_point->keys = realloc(entry_point->keys, (*(entry_point->length)+1)*sizeof(entry_point->keys[0]));
-  if (entry_point->length > 0) {
+  int i = (entry_point != NULL) ? *(entry_point->length) : 0;
+  if (entry_point == NULL) {
+    entry_point = NewNode(value);
+  }
+  else
+  {
+    entry_point->keys = realloc(
+        entry_point->keys,
+        (*(entry_point->length)+1)*sizeof(entry_point->keys[0]));
     for (i; i--;) {
       entry_point->keys[i+1] = entry_point->keys[i];
       if ((value < entry_point->keys[i].data) || (entry_point->length == 0) )
         break;
     }
+    entry_point->keys[i].data = value;
+    entry_point->length++;
   }
-  entry_point->keys[*(entry_point->length)].data = value;
-  entry_point->length++;
   return entry_point;
 }
 
@@ -131,8 +151,7 @@ node *break_node(node *node) {
 
 node *insert(struct node *node, int *value) {
   if (node == NULL) {
-      entry = insert_into(node, value);
-      return entry;
+      return insert_into(node, value);
   }
   else if (*(node->length) < T_FACTOR) {
     int i;
